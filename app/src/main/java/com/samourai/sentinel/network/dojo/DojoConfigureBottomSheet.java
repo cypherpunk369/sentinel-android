@@ -9,12 +9,11 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.constraint.Group;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.BottomSheetDialog;
-import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.DialogFragment;
+import androidx.constraintlayout.widget.Group;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.samourai.sentinel.InsertSegwitActivity;
+import com.invertedx.torservice.TorProxyManager;
 import com.samourai.sentinel.R;
 import com.samourai.sentinel.SamouraiSentinel;
 import com.samourai.sentinel.codescanner.CameraFragmentBottomSheet;
@@ -160,13 +159,13 @@ public class DojoConfigureBottomSheet extends BottomSheetDialogFragment {
             startIntent.setAction(TorService.START_SERVICE);
             getActivity().startService(startIntent);
             Disposable disposable = TorManager.getInstance(getActivity().getApplicationContext())
-                    .torStatus
+                    .getTorStatus()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(state -> {
-                        if (state == TorManager.CONNECTION_STATES.CONNECTING) {
+                        if (state == TorProxyManager.ConnectionStatus.CONNECTING) {
                             progressStates.setText("Waiting for Tor...");
-                        } else if (state == TorManager.CONNECTION_STATES.CONNECTED) {
+                        } else if (state == TorProxyManager.ConnectionStatus.CONNECTED) {
                             PrefsUtil.getInstance(getActivity()).setValue(PrefsUtil.ENABLE_TOR, true);
                             dojoConnectProgress.setProgress(60);
                             progressStates.setText("Tor Connected, Connecting to Dojo Node...");

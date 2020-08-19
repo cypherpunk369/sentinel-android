@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.invertedx.torservice.TorProxyManager;
 import com.samourai.sentinel.tor.TorManager;
 import com.samourai.sentinel.util.AppUtil;
 import com.samourai.sentinel.util.ConnectivityStatus;
@@ -44,11 +45,11 @@ public class MainActivity extends Activity {
             if (ConnectivityStatus.hasConnectivity(getApplicationContext()) && PrefsUtil.getInstance(getApplicationContext()).getValue(PrefsUtil.ENABLE_TOR, false)) {
                 loaderTxView.setText(getText(R.string.initializing_tor));
                 Disposable disposable = TorManager.getInstance(getApplicationContext())
-                        .torStatus
+                        .getTorStatus()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(connection_states -> {
-                            if (connection_states == TorManager.CONNECTION_STATES.CONNECTED) {
+                            if (connection_states == TorProxyManager.ConnectionStatus.CONNECTED) {
                                 doMain();
                                 compositeDisposables.dispose();
                             }
