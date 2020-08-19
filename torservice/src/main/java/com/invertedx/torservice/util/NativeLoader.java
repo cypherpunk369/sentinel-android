@@ -1,5 +1,5 @@
 
-package com.msopentech.thali.android.toronionproxy.torinstaller;
+package com.invertedx.torservice.util;
 
 import android.content.Context;
 import android.os.Build;
@@ -14,25 +14,31 @@ import java.util.zip.ZipFile;
 
 public class NativeLoader {
 
-    private final static String LIB_NAME = "tor";
-    private final static String LIB_SO_NAME = "tor.so";
-
     private final static String TAG = "TorNativeLoader";
 
-    private static boolean loadFromZip(Context context, File destLocalFile, String arch) {
+    private static boolean loadFromZip(Context context, String libName, File destLocalFile, String folder) {
 
 
         ZipFile zipFile = null;
         InputStream stream = null;
-
         try {
             zipFile = new ZipFile(context.getApplicationInfo().sourceDir);
-            ZipEntry entry = zipFile.getEntry("lib/" + arch + "/" + LIB_SO_NAME);
-            if (entry == null) {
-                throw new Exception("Unable to find file in apk:" + "lib/" + arch + "/" + LIB_NAME);
-            }
 
-            //how we wrap this in another stream because the native .so is zipped itself
+            /**
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements())
+            {
+                ZipEntry entry = entries.nextElement();
+                Log.d("Zip","entry: " + entry.getName());
+            }
+            **/
+
+            ZipEntry entry = zipFile.getEntry("lib/" + folder + "/" + libName + ".so");
+            if (entry == null) {
+                entry = zipFile.getEntry("lib/" + folder + "/" + libName);
+                if (entry == null)
+                throw new Exception("Unable to find file in apk:" + "lib/" + folder + "/" + libName);
+            }
             stream = zipFile.getInputStream(entry);
 
             OutputStream out = new FileOutputStream(destLocalFile);
@@ -70,19 +76,22 @@ public class NativeLoader {
         return false;
     }
 
-    public static synchronized File initNativeLibs(Context context, File destLocalFile) {
+    public static synchronized boolean initNativeLibs(Context context, String binaryName, File destLocalFile) {
 
         try {
             String folder = Build.CPU_ABI;
-            if (loadFromZip(context, destLocalFile, folder)) {
-                return destLocalFile;
+
+            String javaArch = System.getProperty("os.arch");
+            if (javaArch != null && javaArch.contains("686")) {
+                folder = "x86";
             }
 
+            return loadFromZip(context, binaryName, destLocalFile, folder);
+
         } catch (Throwable e) {
-            Log.e(TAG, e.getMessage(), e);
+            e.printStackTrace();
         }
 
-
-        return null;
+        return false;
     }
 }

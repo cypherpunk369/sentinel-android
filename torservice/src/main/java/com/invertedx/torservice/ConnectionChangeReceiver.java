@@ -1,4 +1,5 @@
-package com.msopentech.thali.android.toronionproxy;
+package com.invertedx.torservice;
+
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
