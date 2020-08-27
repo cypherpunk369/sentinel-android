@@ -6,6 +6,7 @@ import android.util.Log;
 //import android.util.Log;
 
 import com.samourai.sentinel.crypto.AESUtil;
+import com.samourai.sentinel.network.dojo.DojoUtil;
 import com.samourai.sentinel.segwit.P2SH_P2WPKH;
 import com.samourai.sentinel.segwit.SegwitAddress;
 import com.samourai.sentinel.util.AddressFactory;
@@ -214,6 +215,9 @@ public class SamouraiSentinel {
             if(obj != null && obj.has("receives"))    {
                 ReceiveLookAtUtil.getInstance().fromJSON(obj.getJSONArray("receives"));
             }
+            if(obj != null && obj.has("dojo"))    {
+                DojoUtil.getInstance(context).fromJSON(new JSONObject(obj.getString("dojo")));
+            }
 
         }
         catch(JSONException ex) {
@@ -265,6 +269,16 @@ public class SamouraiSentinel {
             obj.put("legacy", _addr);
 
             obj.put("receives", ReceiveLookAtUtil.getInstance().toJSON());
+            obj.put("receives", ReceiveLookAtUtil.getInstance().toJSON());
+
+            if(DojoUtil.getInstance(context).getDojoParams() != null){
+                try {
+                    obj.put("dojo", DojoUtil.getInstance(context).toJSON().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
 
             return obj;
         }
