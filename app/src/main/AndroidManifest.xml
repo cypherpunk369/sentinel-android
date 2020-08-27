@@ -22,6 +22,7 @@
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
         android:name=".SentinelApplication"
+        tools:replace="android:allowBackup"
         tools:ignore="GoogleAppIndexingWarning">
         <service
             android:name=".tor.TorService"

@@ -11,5 +11,6 @@ public class TorBroadCastReceiver extends BroadcastReceiver {
         Intent serviceIntent = new Intent(context, TorService.class);
         serviceIntent.setAction(intent.getAction());
         context.startService(serviceIntent);
+
     }
 }

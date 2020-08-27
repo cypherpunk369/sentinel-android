@@ -2,9 +2,9 @@ package com.samourai.sentinel.network.dojo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.invertedx.torservice.TorProxyManager;
 import com.samourai.sentinel.R;
 import com.samourai.sentinel.SamouraiSentinel;
 import com.samourai.sentinel.service.WebSocketService;
@@ -154,19 +155,19 @@ public class Network extends AppCompatActivity {
 
     private void listenToTorStatus() {
         Disposable disposable = TorManager.getInstance(getApplicationContext())
-                .torStatus
+                .getTorStatus()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::setTorConnectionState);
 
         disposables.add(disposable);
 
-        this.runOnUiThread(() -> setTorConnectionState(TorManager.getInstance(getApplicationContext()).isConnected() ? TorManager.CONNECTION_STATES.CONNECTED : TorManager.CONNECTION_STATES.DISCONNECTED));
+        this.runOnUiThread(() -> setTorConnectionState(TorManager.getInstance(getApplicationContext()).isConnected() ? TorProxyManager.ConnectionStatus.CONNECTED : TorProxyManager.ConnectionStatus.DISCONNECTED));
     }
 
-    private void setTorConnectionState(TorManager.CONNECTION_STATES enabled) {
+    private void setTorConnectionState(TorProxyManager.ConnectionStatus enabled) {
         this.runOnUiThread(() -> {
-            if (enabled == TorManager.CONNECTION_STATES.CONNECTED) {
+            if (enabled == TorProxyManager.ConnectionStatus.CONNECTED) {
                 torButton.setText(getString(R.string.disable));
                 torButton.setEnabled(true);
                 torConnectionIcon.setColorFilter(activeColor);
@@ -183,7 +184,7 @@ public class Network extends AppCompatActivity {
 //
 //                }
 
-            } else if (enabled == TorManager.CONNECTION_STATES.CONNECTING) {
+            } else if (enabled == TorProxyManager.ConnectionStatus.CONNECTING) {
                 torRenewBtn.setVisibility(View.INVISIBLE);
                 torButton.setText(getString(R.string.loading));
                 torButton.setEnabled(false);
