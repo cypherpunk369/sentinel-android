@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 29
     buildToolsVersion "29.0.3"
     flavorDimensions "versionCode"
     defaultConfig {
         applicationId "com.samourai.sentinel"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 29
         versionCode 49
         versionName '3.6'
         multiDexEnabled true
@@ -44,7 +44,7 @@ android {
         production {
             minSdkVersion 21
             applicationId 'com.samourai.sentinel'
-            targetSdkVersion 30
+            targetSdkVersion 29
             versionCode 49
             versionName '3.6'
             resValue "string", "app_name", "Sentinel"
@@ -53,7 +53,7 @@ android {
         staging {
             minSdkVersion 21
             applicationId 'com.samourai.sentinel.staging'
-            targetSdkVersion 28
+            targetSdkVersion 29
             versionCode 50
             versionName '3.7'
             resValue "string", "app_name", "Sentinel Staging"
