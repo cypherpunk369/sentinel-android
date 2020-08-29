@@ -179,5 +179,6 @@
     <string name="tor_initializing">Tor initializing</string>
     <string name="enable">Enable</string>
     <string name="disabled">Disabled</string>
+    <string name="connecting_to_dojo">Connecting to dojo</string>
 
 </resources>
