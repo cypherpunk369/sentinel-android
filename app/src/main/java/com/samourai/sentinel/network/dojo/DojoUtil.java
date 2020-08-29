@@ -142,7 +142,6 @@ public class DojoUtil {
     }
 
     public boolean isDojoEnabled() {
-        Log.i("CALLED", ":CcccccLL");
 
         return getDojoParams() != null;
     }
@@ -181,7 +180,6 @@ public class DojoUtil {
     }
 
     public void fromJSON(JSONObject obj) {
-        Log.i("CALLED", ":CLL");
         if (isValidPairingPayload(obj.toString())) {
 
             dojoParams = obj.toString();
