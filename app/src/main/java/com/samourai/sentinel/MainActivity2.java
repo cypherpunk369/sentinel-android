@@ -226,7 +226,9 @@ public class MainActivity2 extends Activity {
                     });
             disposables.add(disposable);
         } else {
-
+            Intent intent = new Intent(MainActivity2.this, BalanceActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 
