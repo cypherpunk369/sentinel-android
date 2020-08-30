@@ -67,8 +67,8 @@ public class WebUtil {
 
     public String postURL(String URL, String urlParameters) throws Exception {
 
-        if ( PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
-            return tor_postURL(URL,urlParameters);
+        if (PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
+            return tor_postURL(URL, urlParameters);
         }
 
 
@@ -99,13 +99,16 @@ public class WebUtil {
     public String postURL(String URL, FormBody args) throws Exception {
 
 
-
-        if ( PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
-            return tor_postURL(URL,args);
+        if (PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
+            return tor_postURL(URL, args);
         }
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
+        builder.retryOnConnectionFailure(true)
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .callTimeout(90, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS);
         if (BuildConfig.DEBUG) {
             builder.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY));
         }
@@ -127,7 +130,7 @@ public class WebUtil {
 
     public String getURL(String URL) throws Exception {
 
-        if ( PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
+        if (PrefsUtil.getInstance(context).getValue(PrefsUtil.ENABLE_TOR, false)) {
             return tor_getURL(URL);
         }
 
@@ -161,9 +164,9 @@ public class WebUtil {
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .proxy(TorManager.getInstance(this.context).getProxy())
-                .connectTimeout(90, TimeUnit.SECONDS)
-                .readTimeout(90, TimeUnit.SECONDS);
-
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .callTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS);
         if (BuildConfig.DEBUG) {
             builder.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY));
         }
@@ -195,12 +198,12 @@ public class WebUtil {
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .proxy(TorManager.getInstance(this.context).getProxy())
-                .connectTimeout(90, TimeUnit.SECONDS)
-                .readTimeout(90, TimeUnit.SECONDS);
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .callTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS);
 
         if (URL.contains("onion")) {
             getHostNameVerifier(builder);
-            builder.connectTimeout(90, TimeUnit.SECONDS);
         }
 
         if (BuildConfig.DEBUG) {
@@ -228,14 +231,17 @@ public class WebUtil {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .proxy(TorManager.getInstance(this.context).getProxy());
 
+        builder.connectTimeout(120, TimeUnit.SECONDS)
+                .callTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS);
+
+
         if (URL.contains("onion")) {
             getHostNameVerifier(builder);
-            builder.connectTimeout(90, TimeUnit.SECONDS);
         }
 
         if (BuildConfig.DEBUG) {
             builder.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY));
-            builder.connectTimeout(90, TimeUnit.SECONDS);
         }
 
         Request request = new Request.Builder()
