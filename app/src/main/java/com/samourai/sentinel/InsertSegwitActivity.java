@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.samourai.sentinel.api.APIFactory;
 import com.samourai.sentinel.util.AppUtil;
@@ -34,14 +35,14 @@ public class InsertSegwitActivity extends Activity {
         String purpose = null;
 
         Bundle extras = getIntent().getExtras();
-        if(extras != null && extras.containsKey("xpub"))	{
+        if (extras != null && extras.containsKey("xpub")) {
             xpub = extras.getString("xpub");
             label = extras.getString("label");
             purpose = extras.getString("purpose");
         }
 
         segwitTask = new SegwitTask();
-        segwitTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new String[] { xpub, purpose, label });
+        segwitTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new String[]{xpub, purpose, label});
 
     }
 
@@ -74,7 +75,7 @@ public class InsertSegwitActivity extends Activity {
             String response = null;
             try {
 
-                FormBody body    = new FormBody.Builder()
+                FormBody body = new FormBody.Builder()
                         .add("xpub", params[0])
                         .add("type", "restore")
                         .add("segwit", "bip".concat(params[1]))
@@ -88,16 +89,15 @@ public class InsertSegwitActivity extends Activity {
                 Log.d("InsertSegwitActivity", "Segwit:" + response);
 
                 JSONObject obj = new JSONObject(response);
-                if(obj != null && obj.has("status") && obj.getString("status").equals("ok"))    {
-                    if(progress != null && progress.isShowing())    {
+                if (obj != null && obj.has("status") && obj.getString("status").equals("ok")) {
+                    if (progress != null && progress.isShowing()) {
                         progress.dismiss();
                         progress = null;
                     }
 
-                    if(params[1].equals("84"))    {
+                    if (params[1].equals("84")) {
                         SamouraiSentinel.getInstance(InsertSegwitActivity.this).getBIP84().put(params[0], params[2]);
-                    }
-                    else    {
+                    } else {
                         SamouraiSentinel.getInstance(InsertSegwitActivity.this).getBIP49().put(params[0], params[2]);
                     }
 
@@ -116,21 +116,48 @@ public class InsertSegwitActivity extends Activity {
                     setResult(Activity.RESULT_OK, resultIntent);
                     InsertSegwitActivity.this.finish();
 
-                }
-                else    {
-                    Intent resultIntent = new Intent();
-                    setResult(Activity.RESULT_CANCELED, resultIntent);
-                    InsertSegwitActivity.this.finish();
+                } else {
+
+                    if (obj != null && obj.has("error") && obj.getString("error").toLowerCase().contains("progress")) {
+                        if (progress != null && progress.isShowing()) {
+                            progress.dismiss();
+                            progress = null;
+                        }
+
+                        if (params[1].equals("84")) {
+                            SamouraiSentinel.getInstance(InsertSegwitActivity.this).getBIP84().put(params[0], params[2]);
+                        } else {
+                            SamouraiSentinel.getInstance(InsertSegwitActivity.this).getBIP49().put(params[0], params[2]);
+                        }
+
+                        try {
+                            SamouraiSentinel.getInstance(InsertSegwitActivity.this).serialize(SamouraiSentinel.getInstance(InsertSegwitActivity.this).toJSON(), null);
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        } catch (JSONException je) {
+                            je.printStackTrace();
+                        }
+
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("xpub", params[0]);
+                        resultIntent.putExtra("purpose", params[1]);
+                        resultIntent.putExtra("label", params[2]);
+                        setResult(Activity.RESULT_OK, resultIntent);
+                        InsertSegwitActivity.this.finish();
+                        Toast.makeText(getApplicationContext(), "Xpub is being imported by the server ", Toast.LENGTH_LONG).show();
+                    } else {
+                        Intent resultIntent = new Intent();
+                        setResult(Activity.RESULT_CANCELED, resultIntent);
+                        InsertSegwitActivity.this.finish();
+                    }
                 }
 
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Intent resultIntent = new Intent();
                 setResult(Activity.RESULT_CANCELED, resultIntent);
                 InsertSegwitActivity.this.finish();
-            }
-            finally {
+            } finally {
                 ;
             }
 
@@ -139,7 +166,7 @@ public class InsertSegwitActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            if(progress != null && progress.isShowing())    {
+            if (progress != null && progress.isShowing()) {
                 progress.dismiss();
             }
         }
