@@ -897,7 +897,7 @@ public class BalanceActivity extends AppCompatActivity {
 
         int sel = SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount() == 0 ? 0 : SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount() - 1;
 
-        new AlertDialog.Builder(getApplicationContext())
+        new AlertDialog.Builder(BalanceActivity.this)
                 .setTitle(R.string.deposit_into)
                 .setSingleChoiceItems(accounts, sel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
