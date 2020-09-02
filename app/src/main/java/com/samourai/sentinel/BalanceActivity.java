@@ -782,9 +782,9 @@ public class BalanceActivity extends AppCompatActivity {
 
                 final PrivKeyReader pvr = privKeyReader;
 
-                final EditText password38 = new EditText(getApplicationContext());
+                final EditText password38 = new EditText(BalanceActivity.this);
 
-                AlertDialog.Builder dlg = new AlertDialog.Builder(getApplicationContext())
+                AlertDialog.Builder dlg = new AlertDialog.Builder(BalanceActivity.this)
                         .setTitle(R.string.app_name)
                         .setMessage(R.string.bip38_pw)
                         .setView(password38)
@@ -796,7 +796,7 @@ public class BalanceActivity extends AppCompatActivity {
 
                                 String password = password38.getText().toString();
 
-                                ProgressDialog progress = new ProgressDialog(getApplicationContext());
+                                ProgressDialog progress = new ProgressDialog(BalanceActivity.this);
                                 progress.setCancelable(false);
                                 progress.setTitle(R.string.app_name);
                                 progress.setMessage(getString(R.string.decrypting_bip38));
@@ -816,13 +816,13 @@ public class BalanceActivity extends AppCompatActivity {
                                         pvr.setPassword(new CharSequenceX(password));
                                         keyDecoded = true;
 
-                                        Toast.makeText(getApplicationContext(), pvr.getFormat(), Toast.LENGTH_SHORT).show();
-                                        Toast.makeText(getApplicationContext(), pvr.getKey().toAddress(SamouraiSentinel.getInstance().getCurrentNetworkParams()).toString(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(BalanceActivity.this, pvr.getFormat(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(BalanceActivity.this, pvr.getKey().toAddress(SamouraiSentinel.getInstance().getCurrentNetworkParams()).toString(), Toast.LENGTH_SHORT).show();
 
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    Toast.makeText(getApplicationContext(), R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(BalanceActivity.this, R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
                                 }
 
                                 if (progress != null && progress.isShowing()) {
@@ -830,9 +830,9 @@ public class BalanceActivity extends AppCompatActivity {
                                 }
 
                                 if (keyDecoded) {
-                                    String strReceiveAddress = SamouraiSentinel.getInstance(getApplicationContext()).getReceiveAddress();
+                                    String strReceiveAddress = SamouraiSentinel.getInstance(BalanceActivity.this).getReceiveAddress();
                                     if (strReceiveAddress != null) {
-                                        SweepUtil.getInstance(getApplicationContext()).sweep(pvr, strReceiveAddress, SweepUtil.TYPE_P2PKH);
+                                        SweepUtil.getInstance(BalanceActivity.this).sweep(pvr, strReceiveAddress, SweepUtil.TYPE_P2PKH);
                                     }
                                 }
 
@@ -842,7 +842,7 @@ public class BalanceActivity extends AppCompatActivity {
 
                                 dialog.dismiss();
 
-                                Toast.makeText(getApplicationContext(), R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(BalanceActivity.this, R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
 
                             }
                         });
@@ -851,10 +851,10 @@ public class BalanceActivity extends AppCompatActivity {
                 }
 
             } else if (privKeyReader != null) {
-                String strReceiveAddress = SamouraiSentinel.getInstance(getApplicationContext()).getReceiveAddress();
+                String strReceiveAddress = SamouraiSentinel.getInstance(BalanceActivity.this).getReceiveAddress();
                 if (strReceiveAddress != null) {
                     Log.d("BalanceActivity", "receive address:" + strReceiveAddress);
-                    SweepUtil.getInstance(getApplicationContext()).sweep(privKeyReader, strReceiveAddress, SweepUtil.TYPE_P2PKH);
+                    SweepUtil.getInstance(BalanceActivity.this).sweep(privKeyReader, strReceiveAddress, SweepUtil.TYPE_P2PKH);
                 }
             } else {
                 ;
