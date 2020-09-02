@@ -88,7 +88,7 @@ public class MainActivity2 extends Activity {
             isVerified = extras.getBoolean("verified");
         }
 
-        if (!ConnectivityStatus.hasConnectivity(MainActivity2.this)) {
+        if (!ConnectivityStatus.hasConnectivity(getApplicationContext())) {
 
             new AlertDialog.Builder(MainActivity2.this)
                     .setTitle(R.string.app_name)
@@ -130,19 +130,19 @@ public class MainActivity2 extends Activity {
                             try {
                                 JSONObject obj = SamouraiSentinel.getInstance(MainActivity2.this).deserialize(null);
 
-                                SamouraiSentinel.getInstance(MainActivity2.this).parseJSON(obj);
+                                SamouraiSentinel.getInstance(getApplicationContext()).parseJSON(obj);
 
-                                if (SamouraiSentinel.getInstance(MainActivity2.this).getXPUBs().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getBIP49().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getBIP84().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getLegacy().keySet().size() < 1) {
+                                if (SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getLegacy().keySet().size() < 1) {
                                     SamouraiSentinel.getInstance(MainActivity2.this).restoreFromPrefs();
                                 }
 
-                                if (SamouraiSentinel.getInstance(MainActivity2.this).getXPUBs().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getBIP49().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getBIP84().keySet().size() < 1 &&
-                                        SamouraiSentinel.getInstance(MainActivity2.this).getLegacy().keySet().size() < 1) {
+                                if (SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().keySet().size() < 1 &&
+                                        SamouraiSentinel.getInstance(getApplicationContext()).getLegacy().keySet().size() < 1) {
                                     Intent intent = new Intent(MainActivity2.this, InitActivity.class);
                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
@@ -183,19 +183,19 @@ public class MainActivity2 extends Activity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
-            feeThread();
-            exchangeRateThread();
+//            feeThread();
+//            exchangeRateThread();
         }
 
-        BackgroundManager.get(MainActivity2.this).addListener(bgListener);
+//        BackgroundManager.get(MainActivity2.this).addListener(bgListener);
 
     }
 
 
     void gotoBalanceActivity() {
         try {
-            JSONObject obj = SamouraiSentinel.getInstance(MainActivity2.this).deserialize(null);
-            SamouraiSentinel.getInstance(MainActivity2.this).parseJSON(obj);
+            JSONObject obj = SamouraiSentinel.getInstance(getApplicationContext()).deserialize(null);
+            SamouraiSentinel.getInstance(getApplicationContext()).parseJSON(obj);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -228,7 +228,6 @@ public class MainActivity2 extends Activity {
         } else {
             Intent intent = new Intent(MainActivity2.this, BalanceActivity.class);
             startActivity(intent);
-            finish();
         }
     }
 

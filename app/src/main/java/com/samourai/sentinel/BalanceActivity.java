@@ -931,11 +931,15 @@ public class BalanceActivity extends AppCompatActivity {
             progress = null;
         }
 
-        progress = new ProgressDialog(BalanceActivity.this);
-        progress.setCancelable(false);
-        progress.setTitle(R.string.app_name);
-        progress.setMessage(getString(R.string.please_wait));
-        progress.show();
+        try {
+            progress = new ProgressDialog(BalanceActivity.this);
+            progress.setCancelable(false);
+            progress.setTitle(R.string.app_name);
+            progress.setMessage(getString(R.string.please_wait));
+            progress.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         new Thread(new Runnable() {
             @Override

@@ -215,9 +215,7 @@ public class SamouraiSentinel {
             if(obj != null && obj.has("receives"))    {
                 ReceiveLookAtUtil.getInstance().fromJSON(obj.getJSONArray("receives"));
             }
-            Log.i("CALLED",obj.toString());
             if(obj.has("dojo"))    {
-                Log.i("CALLED","dojo".concat(obj.toString()));
                 DojoUtil.getInstance(context).fromJSON(new JSONObject(obj.getString("dojo")));
             }
 
