@@ -2,9 +2,11 @@ package com.samourai.sentinel.network.dojo;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -118,13 +120,11 @@ public class Network extends AppCompatActivity {
 //                    Toast.makeText(this,R.string.cannot_disable_tor_dojo,Toast.LENGTH_LONG).show();
 //                    return;
 //                }
-
+                WebSocketService.stopJobs(getApplicationContext());
                 stopTor();
                 PrefsUtil.getInstance(getApplicationContext()).setValue(PrefsUtil.ENABLE_TOR, false);
             } else {
-                if (AppUtil.getInstance(this.getApplicationContext()).isServiceRunning(WebSocketService.class)) {
-                    stopService(new Intent(this.getApplicationContext(), WebSocketService.class));
-                }
+                WebSocketService.startJob(getApplicationContext());
                 startTor();
                 PrefsUtil.getInstance(getApplicationContext()).setValue(PrefsUtil.ENABLE_TOR, true);
             }

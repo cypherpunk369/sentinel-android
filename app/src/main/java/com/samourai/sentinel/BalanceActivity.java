@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -152,7 +153,7 @@ public class BalanceActivity extends AppCompatActivity {
         accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                SamouraiSentinel.getInstance(BalanceActivity.this).setCurrentSelectedAccount(position);
+                SamouraiSentinel.getInstance(getApplicationContext()).setCurrentSelectedAccount(position);
 
                 refreshTx(false);
             }
@@ -163,7 +164,7 @@ public class BalanceActivity extends AppCompatActivity {
             }
         });
 
-        LayoutInflater inflator = BalanceActivity.this.getLayoutInflater();
+        LayoutInflater inflator = getLayoutInflater();
         tvBalanceBar = (LinearLayout) inflator.inflate(R.layout.balance_layout, null);
         tvBalanceBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -194,7 +195,7 @@ public class BalanceActivity extends AppCompatActivity {
             public void onClick(View arg0) {
 
                 TimeOutUtil.getInstance().updatePin();
-                Intent intent = new Intent(BalanceActivity.this, XPUBListActivity.class);
+                Intent intent = new Intent(getApplicationContext(), XPUBListActivity.class);
                 startActivity(intent);
 
             }
@@ -231,7 +232,7 @@ public class BalanceActivity extends AppCompatActivity {
 
                     String strTx = tx.getHash();
                     if (strTx != null) {
-                        int sel = PrefsUtil.getInstance(BalanceActivity.this).getValue(PrefsUtil.BLOCK_EXPLORER, 0);
+                        int sel = PrefsUtil.getInstance(getApplicationContext()).getValue(PrefsUtil.BLOCK_EXPLORER, 0);
                         CharSequence url = BlockExplorerUtil.getInstance().getBlockExplorerUrls()[sel];
 
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url + strTx));
@@ -243,31 +244,19 @@ public class BalanceActivity extends AppCompatActivity {
             }
         });
 
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshTx(true);
-                    }
-                });
-
-            }
-        });
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(() -> new Handler().post(() -> refreshTx(true)));
         swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-        if (!AppUtil.getInstance(BalanceActivity.this.getApplicationContext()).isServiceRunning(WebSocketService.class) && !DojoUtil.getInstance(getApplicationContext()).isDojoEnabled()) {
-            BalanceActivity.this.startService(new Intent(BalanceActivity.this.getApplicationContext(), WebSocketService.class));
+        if (!AppUtil.getInstance(getApplicationContext().getApplicationContext()).isServiceRunning(WebSocketService.class) && !DojoUtil.getInstance(getApplicationContext()).isDojoEnabled()) {
+            WebSocketService.startJob(getApplicationContext());
         }
 
-        if (!PermissionsUtil.getInstance(BalanceActivity.this).hasPermission(Manifest.permission.CAMERA)) {
-            PermissionsUtil.getInstance(BalanceActivity.this).showRequestPermissionsInfoAlertDialog(PermissionsUtil.CAMERA_PERMISSION_CODE);
+        if (!PermissionsUtil.getInstance(getApplicationContext()).hasPermission(Manifest.permission.CAMERA)) {
+            PermissionsUtil.getInstance(getApplicationContext()).showRequestPermissionsInfoAlertDialog(PermissionsUtil.CAMERA_PERMISSION_CODE);
         }
 
         restoreWatchOnly();
@@ -279,9 +268,9 @@ public class BalanceActivity extends AppCompatActivity {
         super.onResume();
 
         IntentFilter filter = new IntentFilter(ACTION_INTENT);
-        LocalBroadcastManager.getInstance(BalanceActivity.this).registerReceiver(receiver, filter);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
 
-        AppUtil.getInstance(BalanceActivity.this).checkTimeOut();
+        AppUtil.getInstance(getApplicationContext()).checkTimeOut();
 
     }
 
@@ -289,7 +278,7 @@ public class BalanceActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
 
-        LocalBroadcastManager.getInstance(BalanceActivity.this).unregisterReceiver(receiver);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver);
     }
 
     @Override
@@ -326,6 +315,7 @@ public class BalanceActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == SCAN_COLD_STORAGE) {
 
             if (data != null && data.getStringExtra(ZBarConstants.SCAN_RESULT) != null) {
@@ -354,7 +344,7 @@ public class BalanceActivity extends AppCompatActivity {
 
             alert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    AccessFactory.getInstance(BalanceActivity.this).setIsLoggedIn(false);
+                    AccessFactory.getInstance(getApplicationContext()).setIsLoggedIn(false);
                     TimeOutUtil.getInstance().reset();
                     dialog.dismiss();
 
@@ -388,7 +378,7 @@ public class BalanceActivity extends AppCompatActivity {
 
     private void doSettings() {
         TimeOutUtil.getInstance().updatePin();
-        Intent intent = new Intent(BalanceActivity.this, SettingsActivity.class);
+        Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
         startActivity(intent);
     }
 
@@ -399,7 +389,7 @@ public class BalanceActivity extends AppCompatActivity {
         private static final int TYPE_BALANCE = 1;
 
         TransactionAdapter() {
-            inflater = (LayoutInflater) BalanceActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @Override
@@ -473,14 +463,15 @@ public class BalanceActivity extends AppCompatActivity {
 
                 Tx tx = txs.get(position - 1);
 
-                TextView tvTodayLabel = (TextView) view.findViewById(R.id.TodayLabel);
-                String strDateGroup = DateUtil.getInstance(BalanceActivity.this).group(tx.getTS());
+                TextView tvTodayLabel = view.findViewById(R.id.TodayLabel);
+                String strDateGroup = DateUtil.getInstance(getApplication()).group(tx.getTS());
+
                 if (position == 1) {
                     tvTodayLabel.setText(strDateGroup);
                     tvTodayLabel.setVisibility(View.VISIBLE);
                 } else {
                     Tx prevTx = txs.get(position - 2);
-                    String strPrevDateGroup = DateUtil.getInstance(BalanceActivity.this).group(prevTx.getTS());
+                    String strPrevDateGroup = DateUtil.getInstance(getApplication()).group(prevTx.getTS());
 
                     if (strPrevDateGroup.equals(strDateGroup)) {
                         tvTodayLabel.setVisibility(View.GONE);
@@ -491,14 +482,14 @@ public class BalanceActivity extends AppCompatActivity {
                 }
 
                 String strDetails = null;
-                String strTS = DateUtil.getInstance(BalanceActivity.this).formatted(tx.getTS());
+                String strTS = DateUtil.getInstance(getApplication()).formatted(tx.getTS());
                 long _amount = 0L;
                 if (tx.getAmount() < 0.0) {
                     _amount = Math.abs((long) tx.getAmount());
-                    strDetails = BalanceActivity.this.getString(R.string.you_sent);
+                    strDetails = getApplicationContext().getString(R.string.you_sent);
                 } else {
                     _amount = (long) tx.getAmount();
-                    strDetails = BalanceActivity.this.getString(R.string.you_received);
+                    strDetails = getApplicationContext().getString(R.string.you_received);
                 }
                 String strAmount = null;
                 String strUnits = null;
@@ -516,7 +507,7 @@ public class BalanceActivity extends AppCompatActivity {
                 ImageView ivTxStatus = (ImageView) view.findViewById(R.id.TransactionStatus);
                 TextView tvConfirmationCount = (TextView) view.findViewById(R.id.ConfirmationCount);
 
-                tvDirection.setTypeface(TypefaceUtil.getInstance(BalanceActivity.this).getAwesomeTypeface());
+                tvDirection.setTypeface(TypefaceUtil.getInstance(getApplicationContext()).getAwesomeTypeface());
                 if (tx.getAmount() < 0.0) {
                     tvDirection.setTextColor(Color.RED);
                     tvDirection.setText(Character.toString((char) TypefaceUtil.awesome_arrow_up));
@@ -557,28 +548,28 @@ public class BalanceActivity extends AppCompatActivity {
                     swipeRefreshLayout.setRefreshing(true);
                 });
 
-                int idx = SamouraiSentinel.getInstance(BalanceActivity.this).getCurrentSelectedAccount();
+                int idx = SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount();
 
-                List<String> _xpubs = SamouraiSentinel.getInstance(BalanceActivity.this).getAllAddrsSorted();
+                List<String> _xpubs = SamouraiSentinel.getInstance(getApplicationContext()).getAllAddrsSorted();
                 if (idx == 0) {
-                    APIFactory.getInstance(BalanceActivity.this).getXPUB(_xpubs.toArray(new String[_xpubs.size()]));
+                    APIFactory.getInstance(getApplicationContext()).getXPUB(_xpubs.toArray(new String[_xpubs.size()]));
                 } else {
-                    APIFactory.getInstance(BalanceActivity.this).getXPUB(new String[]{_xpubs.get(idx - 1)});
+                    APIFactory.getInstance(getApplicationContext()).getXPUB(new String[]{_xpubs.get(idx - 1)});
                 }
 
                 if (idx == 0) {
-                    txs = APIFactory.getInstance(BalanceActivity.this).getAllXpubTxs();
+                    txs = APIFactory.getInstance(getApplicationContext()).getAllXpubTxs();
                 } else {
-                    txs = APIFactory.getInstance(BalanceActivity.this).getXpubTxs().get(_xpubs.get(idx - 1));
+                    txs = APIFactory.getInstance(getApplicationContext()).getXpubTxs().get(_xpubs.get(idx - 1));
                 }
 
                 try {
-                    if (HD_WalletFactory.getInstance(BalanceActivity.this).get() != null) {
+                    if (HD_WalletFactory.getInstance(getApplicationContext()).get() != null) {
 
-                        HD_Wallet hdw = HD_WalletFactory.getInstance(BalanceActivity.this).get();
+                        HD_Wallet hdw = HD_WalletFactory.getInstance(getApplicationContext()).get();
 
                         for (int i = 0; i < hdw.getAccounts().size(); i++) {
-                            HD_WalletFactory.getInstance(BalanceActivity.this).get().getAccount(i).getReceive().setAddrIdx(AddressFactory.getInstance().getHighestTxReceiveIdx(i));
+                            HD_WalletFactory.getInstance(getApplicationContext()).get().getAccount(i).getReceive().setAddrIdx(AddressFactory.getInstance().getHighestTxReceiveIdx(i));
                         }
 
                     }
@@ -588,11 +579,11 @@ public class BalanceActivity extends AppCompatActivity {
                     ;
                 }
 
-                if (!AppUtil.getInstance(BalanceActivity.this.getApplicationContext()).isServiceRunning(WebSocketService.class) && !DojoUtil.getInstance(getApplicationContext()).isDojoEnabled()) {
-                    startService(new Intent(BalanceActivity.this.getApplicationContext(), WebSocketService.class));
+                if (!AppUtil.getInstance(getApplicationContext().getApplicationContext()).isServiceRunning(WebSocketService.class) && !DojoUtil.getInstance(getApplicationContext()).isDojoEnabled()) {
+                    WebSocketService.startJob(getApplicationContext());
                 }
 
-                PrefsUtil.getInstance(BalanceActivity.this).setValue(PrefsUtil.FIRST_RUN, false);
+                PrefsUtil.getInstance(getApplicationContext()).setValue(PrefsUtil.FIRST_RUN, false);
 
                 handler.post(new Runnable() {
                     public void run() {
@@ -611,18 +602,18 @@ public class BalanceActivity extends AppCompatActivity {
     }
 
     public void displayBalance() {
-        String strFiat = PrefsUtil.getInstance(BalanceActivity.this).getValue(PrefsUtil.CURRENT_FIAT, "USD");
-        double btc_fx = ExchangeRateFactory.getInstance(BalanceActivity.this).getAvgPrice(strFiat);
+        String strFiat = PrefsUtil.getInstance(getApplicationContext()).getValue(PrefsUtil.CURRENT_FIAT, "USD");
+        double btc_fx = ExchangeRateFactory.getInstance(getApplicationContext()).getAvgPrice(strFiat);
 
-        int idx = SamouraiSentinel.getInstance(BalanceActivity.this).getCurrentSelectedAccount();
+        int idx = SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount();
         long balance = 0L;
 
-        List<String> _xpubs = SamouraiSentinel.getInstance(BalanceActivity.this).getAllAddrsSorted();
+        List<String> _xpubs = SamouraiSentinel.getInstance(getApplicationContext()).getAllAddrsSorted();
         if (idx == 0) {
-            balance = APIFactory.getInstance(BalanceActivity.this).getXpubBalance();
-        } else if (_xpubs.get(idx - 1) != null && APIFactory.getInstance(BalanceActivity.this).getXpubAmounts().get(_xpubs.get(idx - 1)) != null) {
-            if (APIFactory.getInstance(BalanceActivity.this).getXpubAmounts().get(_xpubs.get(idx - 1)) != null) {
-                balance = APIFactory.getInstance(BalanceActivity.this).getXpubAmounts().get(_xpubs.get(idx - 1));
+            balance = APIFactory.getInstance(getApplicationContext()).getXpubBalance();
+        } else if (_xpubs.get(idx - 1) != null && APIFactory.getInstance(getApplicationContext()).getXpubAmounts().get(_xpubs.get(idx - 1)) != null) {
+            if (APIFactory.getInstance(getApplicationContext()).getXpubAmounts().get(_xpubs.get(idx - 1)) != null) {
+                balance = APIFactory.getInstance(getApplicationContext()).getXpubAmounts().get(_xpubs.get(idx - 1));
             }
         } else {
             ;
@@ -781,7 +772,7 @@ public class BalanceActivity extends AppCompatActivity {
             format = privKeyReader.getFormat();
 //            Log.d("BalanceActivity", "privkey format:" + format);
         } catch (Exception e) {
-            Toast.makeText(BalanceActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -791,9 +782,9 @@ public class BalanceActivity extends AppCompatActivity {
 
                 final PrivKeyReader pvr = privKeyReader;
 
-                final EditText password38 = new EditText(BalanceActivity.this);
+                final EditText password38 = new EditText(getApplicationContext());
 
-                AlertDialog.Builder dlg = new AlertDialog.Builder(BalanceActivity.this)
+                AlertDialog.Builder dlg = new AlertDialog.Builder(getApplicationContext())
                         .setTitle(R.string.app_name)
                         .setMessage(R.string.bip38_pw)
                         .setView(password38)
@@ -805,7 +796,7 @@ public class BalanceActivity extends AppCompatActivity {
 
                                 String password = password38.getText().toString();
 
-                                ProgressDialog progress = new ProgressDialog(BalanceActivity.this);
+                                ProgressDialog progress = new ProgressDialog(getApplicationContext());
                                 progress.setCancelable(false);
                                 progress.setTitle(R.string.app_name);
                                 progress.setMessage(getString(R.string.decrypting_bip38));
@@ -825,13 +816,13 @@ public class BalanceActivity extends AppCompatActivity {
                                         pvr.setPassword(new CharSequenceX(password));
                                         keyDecoded = true;
 
-                                        Toast.makeText(BalanceActivity.this, pvr.getFormat(), Toast.LENGTH_SHORT).show();
-                                        Toast.makeText(BalanceActivity.this, pvr.getKey().toAddress(SamouraiSentinel.getInstance().getCurrentNetworkParams()).toString(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), pvr.getFormat(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), pvr.getKey().toAddress(SamouraiSentinel.getInstance().getCurrentNetworkParams()).toString(), Toast.LENGTH_SHORT).show();
 
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    Toast.makeText(BalanceActivity.this, R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
                                 }
 
                                 if (progress != null && progress.isShowing()) {
@@ -839,9 +830,9 @@ public class BalanceActivity extends AppCompatActivity {
                                 }
 
                                 if (keyDecoded) {
-                                    String strReceiveAddress = SamouraiSentinel.getInstance(BalanceActivity.this).getReceiveAddress();
+                                    String strReceiveAddress = SamouraiSentinel.getInstance(getApplicationContext()).getReceiveAddress();
                                     if (strReceiveAddress != null) {
-                                        SweepUtil.getInstance(BalanceActivity.this).sweep(pvr, strReceiveAddress, SweepUtil.TYPE_P2PKH);
+                                        SweepUtil.getInstance(getApplicationContext()).sweep(pvr, strReceiveAddress, SweepUtil.TYPE_P2PKH);
                                     }
                                 }
 
@@ -851,7 +842,7 @@ public class BalanceActivity extends AppCompatActivity {
 
                                 dialog.dismiss();
 
-                                Toast.makeText(BalanceActivity.this, R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.bip38_pw_error, Toast.LENGTH_SHORT).show();
 
                             }
                         });
@@ -860,32 +851,32 @@ public class BalanceActivity extends AppCompatActivity {
                 }
 
             } else if (privKeyReader != null) {
-                String strReceiveAddress = SamouraiSentinel.getInstance(BalanceActivity.this).getReceiveAddress();
+                String strReceiveAddress = SamouraiSentinel.getInstance(getApplicationContext()).getReceiveAddress();
                 if (strReceiveAddress != null) {
                     Log.d("BalanceActivity", "receive address:" + strReceiveAddress);
-                    SweepUtil.getInstance(BalanceActivity.this).sweep(privKeyReader, strReceiveAddress, SweepUtil.TYPE_P2PKH);
+                    SweepUtil.getInstance(getApplicationContext()).sweep(privKeyReader, strReceiveAddress, SweepUtil.TYPE_P2PKH);
                 }
             } else {
                 ;
             }
 
         } else {
-            Toast.makeText(BalanceActivity.this, R.string.cannot_recognize_privkey, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.cannot_recognize_privkey, Toast.LENGTH_SHORT).show();
         }
 
     }
 
     private void confirmAccountSelection(final boolean isSweep) {
 
-        final List<String> xpubList = SamouraiSentinel.getInstance(BalanceActivity.this).getAllAddrsSorted();
+        final List<String> xpubList = SamouraiSentinel.getInstance(getApplicationContext()).getAllAddrsSorted();
 
         if (xpubList.size() == 1) {
-            SamouraiSentinel.getInstance(BalanceActivity.this).setCurrentSelectedAccount(1);
+            SamouraiSentinel.getInstance(getApplicationContext()).setCurrentSelectedAccount(1);
             if (isSweep) {
                 doSweep();
                 return;
             } else {
-                Intent intent = new Intent(BalanceActivity.this, ReceiveActivity.class);
+                Intent intent = new Intent(getApplicationContext(), ReceiveActivity.class);
                 startActivity(intent);
                 return;
             }
@@ -893,33 +884,33 @@ public class BalanceActivity extends AppCompatActivity {
 
         final String[] accounts = new String[xpubList.size()];
         for (int i = 0; i < xpubList.size(); i++) {
-            if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("tpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().containsKey(xpubList.get(i))) {
-                accounts[i] = SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().get(xpubList.get(i));
-            } else if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("ypub") || xpubList.get(i).startsWith("tpub") || xpubList.get(i).startsWith("upub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().containsKey(xpubList.get(i))) {
-                accounts[i] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().get(xpubList.get(i));
-            } else if ((xpubList.get(i).startsWith("zpub") || xpubList.get(i).startsWith("vpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().containsKey(xpubList.get(i))) {
-                accounts[i] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().get(xpubList.get(i));
+            if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("tpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().containsKey(xpubList.get(i))) {
+                accounts[i] = SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().get(xpubList.get(i));
+            } else if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("ypub") || xpubList.get(i).startsWith("tpub") || xpubList.get(i).startsWith("upub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().containsKey(xpubList.get(i))) {
+                accounts[i] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().get(xpubList.get(i));
+            } else if ((xpubList.get(i).startsWith("zpub") || xpubList.get(i).startsWith("vpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().containsKey(xpubList.get(i))) {
+                accounts[i] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().get(xpubList.get(i));
             } else {
-                accounts[i] = SamouraiSentinel.getInstance(BalanceActivity.this).getLegacy().get(xpubList.get(i));
+                accounts[i] = SamouraiSentinel.getInstance(getApplicationContext()).getLegacy().get(xpubList.get(i));
             }
         }
 
-        int sel = SamouraiSentinel.getInstance(BalanceActivity.this).getCurrentSelectedAccount() == 0 ? 0 : SamouraiSentinel.getInstance(BalanceActivity.this).getCurrentSelectedAccount() - 1;
+        int sel = SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount() == 0 ? 0 : SamouraiSentinel.getInstance(getApplicationContext()).getCurrentSelectedAccount() - 1;
 
-        new AlertDialog.Builder(BalanceActivity.this)
+        new AlertDialog.Builder(getApplicationContext())
                 .setTitle(R.string.deposit_into)
                 .setSingleChoiceItems(accounts, sel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
 
                                 dialog.dismiss();
 
-                                SamouraiSentinel.getInstance(BalanceActivity.this).setCurrentSelectedAccount(which + 1);
+                                SamouraiSentinel.getInstance(getApplicationContext()).setCurrentSelectedAccount(which + 1);
                                 accountSpinner.setSelection(which + 1);
 
                                 if (isSweep) {
                                     doSweep();
                                 } else {
-                                    Intent intent = new Intent(BalanceActivity.this, ReceiveActivity.class);
+                                    Intent intent = new Intent(getApplicationContext(), ReceiveActivity.class);
                                     startActivity(intent);
                                 }
 
@@ -931,7 +922,7 @@ public class BalanceActivity extends AppCompatActivity {
 
     private void restoreWatchOnly() {
 
-        final List<String> xpubList = SamouraiSentinel.getInstance(BalanceActivity.this).getAllAddrsSorted();
+        final List<String> xpubList = SamouraiSentinel.getInstance(getApplicationContext()).getAllAddrsSorted();
 
         final Handler handler = new Handler();
 
@@ -962,9 +953,8 @@ public class BalanceActivity extends AppCompatActivity {
                 if (_xpubs.size() > 0) {
                     try {
                         String xpubs = StringUtils.join(_xpubs.toArray(new String[_xpubs.size()]), ":");
-//                        Log.i("BalanceActivity", xpubs);
                         if (_xpubs.size() > 0) {
-                            HD_Wallet hdw = HD_WalletFactory.getInstance(BalanceActivity.this).restoreWallet(xpubs, null, 1);
+                            HD_Wallet hdw = HD_WalletFactory.getInstance(getApplicationContext()).restoreWallet(xpubs, null, 1);
                             if (hdw != null) {
                                 List<HD_Account> accounts = hdw.getAccounts();
                                 for (int i = 0; i < accounts.size(); i++) {
@@ -975,12 +965,12 @@ public class BalanceActivity extends AppCompatActivity {
                         }
 
                     } catch (DecoderException de) {
-                        PrefsUtil.getInstance(BalanceActivity.this).clear();
-                        Toast.makeText(BalanceActivity.this, R.string.xpub_error, Toast.LENGTH_SHORT).show();
+                        PrefsUtil.getInstance(getApplicationContext()).clear();
+                        Toast.makeText(getApplicationContext(), R.string.xpub_error, Toast.LENGTH_SHORT).show();
                         de.printStackTrace();
                     } catch (AddressFormatException afe) {
-                        PrefsUtil.getInstance(BalanceActivity.this).clear();
-                        Toast.makeText(BalanceActivity.this, R.string.xpub_error, Toast.LENGTH_SHORT).show();
+                        PrefsUtil.getInstance(getApplicationContext()).clear();
+                        Toast.makeText(getApplicationContext(), R.string.xpub_error, Toast.LENGTH_SHORT).show();
                         afe.printStackTrace();
                     } finally {
                         ;
@@ -998,27 +988,27 @@ public class BalanceActivity extends AppCompatActivity {
 
                         if (xpubList.size() == 1) {
                             account_selections = new String[1];
-                            if ((xpubList.get(0).startsWith("xpub") || xpubList.get(0).startsWith("tpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().containsKey(xpubList.get(0))) {
-                                account_selections[0] = SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().get(xpubList.get(0));
-                            } else if ((xpubList.get(0).startsWith("xpub") || xpubList.get(0).startsWith("ypub") || xpubList.get(0).startsWith("tpub") || xpubList.get(0).startsWith("upub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().containsKey(xpubList.get(0))) {
-                                account_selections[0] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().get(xpubList.get(0));
-                            } else if ((xpubList.get(0).startsWith("zpub") || xpubList.get(0).startsWith("vpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().containsKey(xpubList.get(0))) {
-                                account_selections[0] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().get(xpubList.get(0));
+                            if ((xpubList.get(0).startsWith("xpub") || xpubList.get(0).startsWith("tpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().containsKey(xpubList.get(0))) {
+                                account_selections[0] = SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().get(xpubList.get(0));
+                            } else if ((xpubList.get(0).startsWith("xpub") || xpubList.get(0).startsWith("ypub") || xpubList.get(0).startsWith("tpub") || xpubList.get(0).startsWith("upub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().containsKey(xpubList.get(0))) {
+                                account_selections[0] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().get(xpubList.get(0));
+                            } else if ((xpubList.get(0).startsWith("zpub") || xpubList.get(0).startsWith("vpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().containsKey(xpubList.get(0))) {
+                                account_selections[0] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().get(xpubList.get(0));
                             } else {
-                                account_selections[0] = SamouraiSentinel.getInstance(BalanceActivity.this).getLegacy().get(xpubList.get(0));
+                                account_selections[0] = SamouraiSentinel.getInstance(getApplicationContext()).getLegacy().get(xpubList.get(0));
                             }
                         } else {
                             account_selections = new String[xpubList.size() + 1];
-                            account_selections[0] = BalanceActivity.this.getString(R.string.total_title);
+                            account_selections[0] = getApplicationContext().getString(R.string.total_title);
                             for (int i = 0; i < xpubList.size(); i++) {
-                                if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("tpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().containsKey(xpubList.get(i))) {
-                                    account_selections[i + 1] = SamouraiSentinel.getInstance(BalanceActivity.this).getXPUBs().get(xpubList.get(i));
-                                } else if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("ypub") || xpubList.get(i).startsWith("tpub") || xpubList.get(i).startsWith("upub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().containsKey(xpubList.get(i))) {
-                                    account_selections[i + 1] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP49().get(xpubList.get(i));
-                                } else if ((xpubList.get(i).startsWith("zpub") || xpubList.get(i).startsWith("vpub")) && SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().containsKey(xpubList.get(i))) {
-                                    account_selections[i + 1] = SamouraiSentinel.getInstance(BalanceActivity.this).getBIP84().get(xpubList.get(i));
+                                if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("tpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().containsKey(xpubList.get(i))) {
+                                    account_selections[i + 1] = SamouraiSentinel.getInstance(getApplicationContext()).getXPUBs().get(xpubList.get(i));
+                                } else if ((xpubList.get(i).startsWith("xpub") || xpubList.get(i).startsWith("ypub") || xpubList.get(i).startsWith("tpub") || xpubList.get(i).startsWith("upub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().containsKey(xpubList.get(i))) {
+                                    account_selections[i + 1] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP49().get(xpubList.get(i));
+                                } else if ((xpubList.get(i).startsWith("zpub") || xpubList.get(i).startsWith("vpub")) && SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().containsKey(xpubList.get(i))) {
+                                    account_selections[i + 1] = SamouraiSentinel.getInstance(getApplicationContext()).getBIP84().get(xpubList.get(i));
                                 } else {
-                                    account_selections[i + 1] = SamouraiSentinel.getInstance(BalanceActivity.this).getLegacy().get(xpubList.get(i));
+                                    account_selections[i + 1] = SamouraiSentinel.getInstance(getApplicationContext()).getLegacy().get(xpubList.get(i));
                                 }
                             }
                         }
@@ -1027,13 +1017,13 @@ public class BalanceActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                         accountSpinner.setAdapter(adapter);
                         if (account_selections.length == 1) {
-                            SamouraiSentinel.getInstance(BalanceActivity.this).setCurrentSelectedAccount(0);
+                            SamouraiSentinel.getInstance(getApplicationContext()).setCurrentSelectedAccount(0);
                         }
 
                         refreshTx(false);
 
                         try {
-                            SamouraiSentinel.getInstance(BalanceActivity.this).serialize(SamouraiSentinel.getInstance(BalanceActivity.this).toJSON(), null);
+                            SamouraiSentinel.getInstance(getApplicationContext()).serialize(SamouraiSentinel.getInstance(getApplicationContext()).toJSON(), null);
                         } catch (IOException ioe) {
                             ;
                         } catch (JSONException je) {
@@ -1066,8 +1056,8 @@ public class BalanceActivity extends AppCompatActivity {
 
     private String getFiatDisplayAmount(long value) {
 
-        String strFiat = PrefsUtil.getInstance(BalanceActivity.this).getValue(PrefsUtil.CURRENT_FIAT, "USD");
-        double btc_fx = ExchangeRateFactory.getInstance(BalanceActivity.this).getAvgPrice(strFiat);
+        String strFiat = PrefsUtil.getInstance(getApplicationContext()).getValue(PrefsUtil.CURRENT_FIAT, "USD");
+        double btc_fx = ExchangeRateFactory.getInstance(getApplicationContext()).getAvgPrice(strFiat);
         String strAmount = MonetaryUtil.getInstance().getFiatFormat(strFiat).format(btc_fx * (((double) value) / 1e8));
 
         return strAmount;
@@ -1075,7 +1065,7 @@ public class BalanceActivity extends AppCompatActivity {
 
     private String getFiatDisplayUnits() {
 
-        return PrefsUtil.getInstance(BalanceActivity.this).getValue(PrefsUtil.CURRENT_FIAT, "USD");
+        return PrefsUtil.getInstance(getApplicationContext()).getValue(PrefsUtil.CURRENT_FIAT, "USD");
 
     }
 

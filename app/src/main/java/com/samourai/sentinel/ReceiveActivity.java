@@ -441,9 +441,10 @@ public class ReceiveActivity extends Activity {
             @Override
             public void run() {
                 if(AppUtil.getInstance(ReceiveActivity.this.getApplicationContext()).isServiceRunning(WebSocketService.class)) {
-                    ReceiveActivity.this.stopService(new Intent(ReceiveActivity.this.getApplicationContext(), WebSocketService.class));
+                   WebSocketService.stopJobs(getApplicationContext());
                 }
-                ReceiveActivity.this.startService(new Intent(ReceiveActivity.this.getApplicationContext(), WebSocketService.class));
+                WebSocketService.startJob(getApplicationContext());
+
             }
         }).start();
 

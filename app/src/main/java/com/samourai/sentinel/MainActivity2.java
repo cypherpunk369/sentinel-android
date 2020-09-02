@@ -66,7 +66,7 @@ public class MainActivity2 extends Activity {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (AppUtil.getInstance(MainActivity2.this.getApplicationContext()).isServiceRunning(WebSocketService.class)) {
-                    stopService(new Intent(MainActivity2.this.getApplicationContext(), WebSocketService.class));
+                    WebSocketService.startJob(getApplicationContext());
                 }
             }
 
