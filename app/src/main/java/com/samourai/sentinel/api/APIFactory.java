@@ -97,12 +97,12 @@ public class APIFactory {
 
         for (int i = 0; i < xpubs.length; i++) {
             try {
-                StringBuilder url = new StringBuilder(_url);
-                url.append("multiaddr?active=");
-                url.append(xpubs[i]);
-                url.append("&&at=".concat(getAccessToken()));
+                FormBody body = new FormBody.Builder()
+                        .add("active", xpubs[i])
+                        .add("at", getAccessToken())
+                        .build();
 //                Log.i("APIFactory", "XPUB:" + url.toString());
-                String response = WebUtil.getInstance(context).getURL(url.toString());
+                String response = WebUtil.getInstance(context).postURL(_url.concat("multiaddr"),body);
                 Log.i("APIFactory", "XPUB response:" + response);
                 try {
                     jsonObject = new JSONObject(response);
@@ -543,9 +543,13 @@ public class APIFactory {
 
         try {
             String url = WebUtil.getAPIUrl(context).concat("fees");
-            url = url.concat("?at=".concat(getAccessToken()));
+
+            FormBody body = new FormBody.Builder()
+                    .add("at", getAccessToken())
+                    .build();
+
 //            Log.i("APIFactory", "Dynamic fees:" + url.toString());
-            String response = WebUtil.getInstance(context).getURL(url);
+            String response = WebUtil.getInstance(context).postURL(url,body);
 //            Log.i("APIFactory", "Dynamic fees response:" + response);
             try {
                 jsonObject = new JSONObject(response);
