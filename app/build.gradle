@@ -54,10 +54,10 @@ android {
             minSdkVersion 21
             applicationId 'com.samourai.sentinel.staging'
             targetSdkVersion 29
-            versionCode 52
-            versionName '4.0.1'
+            versionCode 53
+            versionName '4.0.2'
             resValue "string", "app_name", "Sentinel Staging"
-            resValue "string", "version_name", "4.0.1"
+            resValue "string", "version_name", "4.0.2"
         }
     }
     compileOptions {
