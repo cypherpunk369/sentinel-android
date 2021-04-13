@@ -102,7 +102,7 @@ public class APIFactory {
                         .add("at", getAccessToken())
                         .build();
 //                Log.i("APIFactory", "XPUB:" + url.toString());
-                String response = WebUtil.getInstance(context).postURL(_url.concat("multiaddr"),body);
+                String response = WebUtil.getInstance(context).postURL(_url.concat("wallet"),body);
                 Log.i("APIFactory", "XPUB response:" + response);
                 try {
                     jsonObject = new JSONObject(response);
